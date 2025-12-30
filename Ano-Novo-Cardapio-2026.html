@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MJSR - Painel Administrativo</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #39ff14;
+            --dark-bg: #0a0b10;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --danger: #ff4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--dark-bg);
+            background-image: radial-gradient(circle at top, #1a1b25 0%, #0a0b10 100%);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container { width: 100%; max-width: 600px; }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            border: 1px solid var(--neon-green);
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+            margin-bottom: 15px;
+            background: var(--glass);
+        }
+
+        /* Estilos do Painel de Estatísticas */
+        .stats-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: space-between;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card span { font-size: 9px; text-transform: uppercase; color: #888; display: block; margin-bottom: 5px; }
+        .stat-card b { font-size: 16px; color: var(--neon-blue); }
+        .stat-card.money b { color: var(--neon-green); }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h3 { color: var(--neon-blue); margin-top: 0; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+
+        label { display: block; font-size: 11px; color: var(--neon-blue); margin-bottom: 5px; text-transform: uppercase; }
+
+        input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+            background: var(--neon-green);
+            color: #000;
+        }
+
+        .motoboy-item {
+            background: rgba(0,0,0,0.3);
+            border-left: 4px solid var(--neon-blue);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .item-top { display: flex; justify-content: space-between; align-items: flex-start; }
+
+        .alerta-vencimento {
+            border: 2px solid var(--danger) !important;
+            animation: piscar-vermelho 1.5s infinite alternate;
+        }
+
+        @keyframes piscar-vermelho {
+            from { box-shadow: 0 0 5px var(--danger); }
+            to { box-shadow: 0 0 20px var(--danger); }
+        }
+
+        .info b { color: var(--neon-green); font-size: 15px; display: block; }
+        
+        .timer { 
+            font-family: monospace; 
+            color: var(--neon-blue); 
+            font-weight: bold; 
+            font-size: 14px;
+            background: rgba(0,0,0,0.4);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn-aviso {
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .btn-renovar {
+            background: var(--neon-purple);
+            color: white;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-del {
+            background: transparent;
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .vencido { color: var(--danger) !important; }
+
+        /* Estilos dos Novos Botões de Filtro */
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-filter {
+            flex: 1;
+            padding: 10px 5px;
+            border-radius: 5px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .btn-filter:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn-filter.active {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            color: var(--neon-blue);
+        }
+
+        /* Estilos para a Foto e Lápis */
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-blue);
+            display: none; 
+        }
+
+        .btn-edit-photo {
+            background: var(--glass);
+            border: 1px dashed var(--neon-blue);
+            color: var(--neon-blue);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Estilos para o Modal de Edição Rápida */
+        .edit-form-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .edit-form-content {
+            background: #111;
+            border: 1px solid var(--neon-blue);
+            padding: 20px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        /* Novo estilo para foto dentro do modal */
+        .modal-photo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--neon-green);
+            background: var(--glass);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: var(--neon-blue);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0; color:var(--neon-green); font-size: 22px;">ADMIN GESTÃO</h1>
+            <p style="margin:5px 0 0; font-size: 10px; color: #888;">CONTROLE DE PRAZOS MJSR</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <span>Ativos</span>
+                <b id="total-ativos">0</b>
+            </div>
+            <div class="stat-card">
+                <span>Expirados</span>
+                <b id="total-expirados" style="color: var(--danger);">0</b>
+            </div>
+            <div class="stat-card money">
+                <span>Faturamento Total</span>
+                <b id="total-faturamento">R$ 0,00</b>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Novo Cadastro</h3>
+            <input type="text" id="nome" placeholder="Nome do Motoboy">
+            <input type="number" id="whatsapp" placeholder="WhatsApp (DDD + Número)">
+            <input type="number" id="cpf" placeholder="CPF (Apenas números)">
+            
+            <input type="number" id="valor-assinatura" placeholder="Valor da Assinatura (Ex: 30)" step="0.01">
+            
+            <label>Data e Hora de Expiração:</label>
+            <input type="datetime-local" id="data-expira">
+            
+            <button class="btn" onclick="salvarMotoboy()">Finalizar Cadastro</button>
+        </div>
+
+        <div class="card">
+            <h3>Filtro e Cronogramas</h3>
+            <input type="text" id="busca" placeholder="Pesquisar por nome ou CPF..." onkeyup="buscar()">
+            
+            <div class="filter-group">
+                <button class="btn-filter active" onclick="filtrarStatus('todos', this)">Todos</button>
+                <button class="btn-filter" onclick="filtrarStatus('hoje', this)">Vence Hoje</button>
+                <button class="btn-filter" onclick="filtrarStatus('expirados', this)">Expirados</button>
+            </div>
+
+            <div id="listaMotoboys"></div>
+        </div>
+    </div>
+
+    <div id="modalEdicao" class="edit-form-overlay">
+        <div class="edit-form-content">
+            <h3>Editar Cadastro</h3>
+            
+            <div class="modal-photo-container">
+                <div id="modal-img-preview" class="modal-profile-pic" onclick="abrirSeletorFotoModal()">+</div>
+                <label style="margin-top: 5px; cursor: pointer;" onclick="abrirSeletorFotoModal()">Alterar Foto</label>
+            </div>
+
+            <label>Nome:</label>
+            <input type="text" id="edit-nome">
+            <label>WhatsApp:</label>
+            <input type="number" id="edit-whatsapp">
+            <label>CPF:</label>
+            <input type="number" id="edit-cpf">
+            <label>Último Valor Pago:</label>
+            <input type="number" id="edit-valor" step="0.01">
+            <label>Data de Expiração:</label>
+            <input type="datetime-local" id="edit-data">
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn" style="background: #444; color: white;" onclick="fecharModal()">Cancelar</button>
+                <button class="btn" onclick="confirmarEdicao()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="inputFoto" style="display:none" accept="image/*" onchange="processarFoto(this)">
+
+    <script>
+        let db_motoboys = JSON.parse(localStorage.getItem('mjsr_gestao_db')) || [];
+        let filtroAtual = 'todos'; 
+        let idSendoEditado = null;
+
+        function configurarDataPadrao() {
+            const data = new Date();
+            data.setDate(data.getDate() + 30);
+            
+            const ano = data.getFullYear();
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const dia = String(data.getDate()).padStart(2, '0');
+            const hora = String(data.getHours()).padStart(2, '0');
+            const minuto = String(data.getMinutes()).padStart(2, '0');
+            
+            document.getElementById('data-expira').value = `${ano}-${mes}-${dia}T${hora}:${minuto}`;
+        }
+
+        window.onload = function() {
+            configurarDataPadrao();
+            atualizarEstatisticas();
+        };
+
+        function validarCPF(cpf) {
+            cpf = String(cpf).replace(/[^\d]+/g, '');
+            if (cpf == '' || cpf.length != 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+            let add = 0;
+            for (let i = 0; i < 9; i++) add += parseInt(cpf.charAt(i)) * (10 - i);
+            let rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11) rev = 0;
+            if (rev != parseInt(cpf.charAt(9))) return false;
+            add = 0;
+            for (let i = 0; i < 10; i++) add += parseInt(cpf.charAt(i)) * (11 - i);
+            rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11) rev = 0;
+            if (rev != parseInt(cpf.charAt(10))) return false;
+            return true;
+        }
+
+        function salvarMotoboy() {
+            const nome = document.getElementById('nome').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            const cpf = document.getElementById('cpf').value;
+            const valorInput = document.getElementById('valor-assinatura').value;
+            const dataEscolhida = document.getElementById('data-expira').value;
+
+            if (!nome || !whatsapp || !cpf || !dataEscolhida || !valorInput) {
+                alert("Preencha todos os campos, incluindo o valor!");
+                return;
+            }
+
+            if (!validarCPF(cpf)) {
+                alert("O CPF digitado é INVÁLIDO. Por favor, confira os números.");
+                return;
+            }
+
+            const expiraEmMs = new Date(dataEscolhida.replace('T', ' ')).getTime();
+            const valor = parseFloat(valorInput);
+
+            const novoMotoboy = {
+                id: Date.now(),
+                nome,
+                whatsapp,
+                cpf,
+                expiraEm: expiraEmMs,
+                valorHistorico: valor, 
+                ultimoValor: valor,
+                foto: null 
+            };
+
+            db_motoboys.push(novoMotoboy);
+            localStorage.setItem('mjsr_gestao_db', JSON.stringify(db_motoboys));
+            
+            limparCampos();
+            renderizarLista();
+            atualizarEstatisticas();
+        }
+
+        function filtrarStatus(tipo, element) {
+            filtroAtual = tipo;
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            renderizarLista(document.getElementById('busca').value);
+        }
+
+        function atualizarEstatisticas() {
+            const agora = new Date().getTime();
+            const ativos = db_motoboys.filter(m => m.expiraEm >= agora).length;
+            const expirados = db_motoboys.filter(m => m.expiraEm < agora).length;
+            
+            const faturamentoTotal = db_motoboys.reduce((acc, m) => acc + (m.valorHistorico || 0), 0);
+
+            document.getElementById('total-ativos').innerText = ativos;
+            document.getElementById('total-expirados').innerText = expirados;
+            document.getElementById('total-faturamento').innerText = `R$ ${faturamentoTotal.toLocaleString('pt-br', {minimumFractionDigits: 2})}`;
+        }
+
+        function renderizarLista(termoBusca = "") {
+            const container = document.getElementById('listaMotoboys');
+            container.innerHTML = "";
+            const agora = new Date().getTime();
+
+            let filtrados = db_motoboys.filter(m => 
+                m.nome.toLowerCase().includes(termoBusca.toLowerCase()) || 
+                m.cpf.includes(termoBusca)
+            );
+
+            if (filtroAtual === 'hoje') {
+                const hoje = new Date();
+                hoje.setHours(23, 59, 59, 999);
+                const hojeMs = hoje.getTime();
+                filtrados = filtrados.filter(m => m.expiraEm > agora && m.expiraEm <= hojeMs);
+            } else if (filtroAtual === 'expirados') {
+                filtrados = filtrados.filter(m => m.expiraEm < agora);
+            }
+
+            filtrados.sort((a, b) => a.expiraEm - b.expiraEm);
+
+            filtrados.forEach(m => {
+                const tempoRestante = m.expiraEm - agora;
+                const umDiaEmMs = 24 * 60 * 60 * 1000;
+                const classeAlerta = (tempoRestante > 0 && tempoRestante < umDiaEmMs) ? "alerta-vencimento" : "";
+                const totalInvestido = m.valorHistorico || 0;
+                
+                const temFoto = m.foto ? true : false;
+                const estiloFoto = temFoto ? 'display:block' : 'display:none';
+
+                container.innerHTML += `
+                    <div class="motoboy-item ${classeAlerta}" id="item-${m.id}">
+                        <div class="profile-container">
+                            <img src="${m.foto}" class="profile-pic" style="${estiloFoto}" onclick="abrirModalEdicao(${m.id})">
+                            <div class="btn-edit-photo" onclick="abrirModalEdicao(${m.id})">✎</div>
+                        </div>
+                        <div class="item-top">
+                            <div class="info">
+                                <b>${m.nome}</b>
+                                <span style="font-size:10px; color:#aaa;">CPF: ${m.cpf} | Whats: ${m.whatsapp}</span>
+                                <span style="font-size:11px; color:var(--neon-green); margin-top:5px; display:block;">Total Investido: R$ ${totalInvestido.toLocaleString('pt-br', {minimumFractionDigits: 2})}</span>
+                            </div>
+                            <div class="timer" id="timer-${m.id}">...</div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-aviso" onclick="enviarAviso('${m.whatsapp}', '${m.nome}')">AVISAR WHATSAPP</button>
+                            <button class="btn-renovar" onclick="renovarIndividual(${m.id})">+30 DIAS</button>
+                            <button class="btn-del" onclick="excluir(${m.id})">X</button>
+                        </div>
+                    </div>
+                `;
+            });
+            atualizarTodosOsTimers();
+        }
+
+        // Funções de Edição Geral via Modal
+        function abrirModalEdicao(id) {
+            idSendoEditado = id;
+            const motoboy = db_motoboys.find(m => m.id === id);
+            
+            document.getElementById('edit-nome').value = motoboy.nome;
+            document.getElementById('edit-whatsapp').value = motoboy.whatsapp;
+            document.getElementById('edit-cpf').value = motoboy.cpf;
+            document.getElementById('edit-valor').value = motoboy.ultimoValor;
+            
+            // Preview da foto no modal
+            const preview = document.getElementById('modal-img-preview');
+            if(motoboy.foto) {
+                preview.innerHTML = `<img src="${motoboy.foto}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            } else {
+                preview.innerHTML = `+`;
+            }
+
+            const d = new Date(motoboy.expiraEm);
+            const dataFormatada = d.getFullYear() + "-" + 
+                String(d.getMonth() + 1).padStart(2, '0') + "-" + 
+                String(d.getDate()).padStart(2, '0') + "T" + 
+                String(d.getHours()).padStart(2, '0') + ":" + 
+                String(d.getMinutes()).padStart(2, '0');
+            
+            document.getElementById('edit-data').value = dataFormatada;
+            document.getElementById('modalEdicao').style.display = 'flex';
+        }
+
+        function abrirSeletorFotoModal() {
+            document.getElementById('inputFoto').click();
+        }
+
+        function fecharModal() {
+            document.getElementById('modalEdicao').style.display = 'none';
+        }
+
+        function confirmarEdicao() {
+            const index = db_motoboys.findIndex(m => m.id === idSendoEditado);
+            if (index !== -1) {
+                const novoCPF = document.getElementById('edit-cpf').value;
+                if (!validarCPF(novoCPF)) {
+                    alert("CPF Inválido!");
+                    return;
+                }
+
+                db_motoboys[index].nome = document.getElementById('edit-nome').value;
+                db_motoboys[index].whatsapp = document.getElementById('edit-whatsapp').value;
+                db_motoboys[index].cpf = novoCPF;
+                
+                const valorAntigo = db_motoboys[index].ultimoValor;
+                const novoValor = parseFloat(document.getElementById('edit-valor').value);
+                db_motoboys[index].valorHistorico = (db_motoboys[index].valorHistorico - valorAntigo) + novoValor;
+                db_motoboys[index].ultimoValor = novoValor;
+
+                db_motoboys[index].expiraEm = new Date(document.getElementById('edit-data').value.replace('T', ' ')).getTime();
+
+                localStorage.setItem('mjsr_gestao_db', JSON.stringify(db_motoboys));
+                fecharModal();
+                renderizarLista(document.getElementById('busca').value);
+                atualizarEstatisticas();
+            }
+        }
+
+        // Funções para Foto
+        function processarFoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const index = db_motoboys.findIndex(m => m.id === idSendoEditado);
+                    if (index !== -1) {
+                        db_motoboys[index].foto = e.target.result;
+                        localStorage.setItem('mjsr_gestao_db', JSON.stringify(db_motoboys));
+                        
+                        // Atualiza preview no modal se ele estiver aberto
+                        const preview = document.getElementById('modal-img-preview');
+                        if(preview) {
+                            preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                        }
+                        
+                        renderizarLista(document.getElementById('busca').value);
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function renovarIndividual(id) {
+            const index = db_motoboys.findIndex(m => m.id === id);
+            if (index !== -1) {
+                const motoboy = db_motoboys[index];
+                const novoValorStr = prompt(`Valor da renovação para ${motoboy.nome}:`, motoboy.ultimoValor || "30");
+                const novoValor = parseFloat(novoValorStr);
+
+                if (isNaN(novoValor)) {
+                    alert("Valor inválido! Renovação cancelada.");
+                    return;
+                }
+
+                const agora = new Date().getTime();
+                const baseTempo = Math.max(motoboy.expiraEm, agora);
+                
+                db_motoboys[index].expiraEm = baseTempo + (30 * 24 * 60 * 60 * 1000);
+                db_motoboys[index].valorHistorico = (db_motoboys[index].valorHistorico || 0) + novoValor;
+                db_motoboys[index].ultimoValor = novoValor;
+                
+                localStorage.setItem('mjsr_gestao_db', JSON.stringify(db_motoboys));
+                renderizarLista(document.getElementById('busca').value);
+                atualizarEstatisticas();
+                alert(`Licença de ${motoboy.nome} renovada!`);
+            }
+        }
+
+        function enviarAviso(num, nome) {
+            const msg = `Olá, *${nome}*! Seu *MJSR* vai ter o acesso bloqueado em 59 minutos. Deseja Renovar?!`;
+            window.open(`https://wa.me/55${num}?text=${encodeURIComponent(msg)}`);
+        }
+
+        function atualizarTodosOsTimers() {
+            db_motoboys.forEach(m => {
+                const el = document.getElementById(`timer-${m.id}`);
+                if (!el) return;
+
+                const agora = new Date().getTime();
+                const dist = m.expiraEm - agora;
+
+                if (dist < 0) {
+                    el.innerHTML = "EXPIRADO";
+                    el.classList.add("vencido");
+                } else {
+                    el.classList.remove("vencido");
+                    const d = Math.floor(dist / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const min = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((dist % (1000 * 60)) / 1000);
+                    el.innerHTML = `${d}d ${h}h ${min}m ${s}s`;
+                }
+            });
+            atualizarEstatisticas();
+        }
+
+        setInterval(atualizarTodosOsTimers, 1000);
+
+        function buscar() {
+            renderizarLista(document.getElementById('busca').value);
+        }
+
+        function excluir(id) {
+            if (confirm("Excluir cadastro?")) {
+                db_motoboys = db_motoboys.filter(m => m.id !== id);
+                localStorage.setItem('mjsr_gestao_db', JSON.stringify(db_motoboys));
+                renderizarLista();
+                atualizarEstatisticas();
+            }
+        }
+
+        function limparCampos() {
+            document.getElementById('nome').value = "";
+            document.getElementById('whatsapp').value = "";
+            document.getElementById('cpf').value = "";
+            document.getElementById('valor-assinatura').value = "";
+            configurarDataPadrao();
+        }
+
+        renderizarLista();
+    </script>
+</body>
+</html>
